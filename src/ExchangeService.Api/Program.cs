@@ -1,7 +1,10 @@
+using System.Reflection;
 using ExchangeService.Api.Filters;
 using ExchangeService.Core.Infrastructure.Filters;
 using ExchangeService.Infrastructure;
+using FluentValidation;
 using Microsoft.OpenApi.Models;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -10,8 +13,21 @@ var services = builder.Services;
 // Add services to the container.
 
 services.AddControllers(options =>
-    options.Filters.Add<CustomExceptionFilter>()
+    {
+        options.Filters.Add<CustomExceptionFilter>();
+        options.Filters.Add<ValidationFilter>();
+    }
 );
+services.AddFluentValidationAutoValidation(options =>
+{
+    // Validate child properties and root collection elements
+    options.ImplicitlyValidateChildProperties = true;
+    options.ImplicitlyValidateRootCollectionElements = true;
+
+    // Automatic registration of validators in assembly
+});
+
+services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 services.AddEndpointsApiExplorer();

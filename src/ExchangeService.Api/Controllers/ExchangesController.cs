@@ -17,10 +17,10 @@ public class ExchangesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> MakeExchange([FromBody] MakeExchangeRequest request)
     {
-        var result = await _useCaseService.MakeExchangeAsync(request.SourceCurrencyCode, request.TargetCurrencyCode, request.Amount,request.Direction);
+        var result = await _useCaseService.MakeExchangeAsync(request.SourceCurrencyCode, request.TargetCurrencyCode, request.Amount, request.Direction);
         return Ok(result);
     }
-    
+
     [HttpGet("available-count")]
     public async Task<IActionResult> GetAvailableCountForCustomer()
     {
