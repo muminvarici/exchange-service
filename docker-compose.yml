@@ -1,0 +1,23 @@
+version: "3"
+services:
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    container_name: exchanges_postgres
+    environment:
+      POSTGRES_PASSWORD: admin_passW0rd!
+      POSTGRES_USER: appuser
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+  redis:
+    container_name: exchanges_redis
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+volumes:
+  db:
+    driver: local
