@@ -6,6 +6,7 @@ using ExchangeService.Api.Requests;
 using ExchangeService.Application.Services.Abstractions;
 using ExchangeService.Core.Entities;
 using ExchangeService.Core.Extensions;
+using ExchangeService.Core.Infrastructure.Holders.Abstractions;
 using ExchangeService.Core.Repositories;
 using ExchangeService.Core.Services;
 using ExchangeService.Core.Services.Responses;
@@ -33,6 +34,14 @@ public class ServiceTests
         services.AddInfrastructureServices(configuration);
         services.RemoveAll<ICurrencyProvider>();
         services.AddScoped<ICurrencyProvider, FakeCurrencyProvider>();
+        services.RemoveAll<IHolder>();
+        services.AddScoped<FakeHolder>();
+        services.AddScoped<IHolder>(serviceProvider =>
+        {
+            var service = serviceProvider.GetRequiredService<FakeHolder>();
+            service.InitializeData();
+            return service;
+        });
 
         var serviceProvider = services.BuildServiceProvider();
         _useCaseService = serviceProvider.GetService<IExchangeUseCaseService>();
@@ -96,6 +105,7 @@ public class ServiceTests
         last.TargetAmount.Should().Be(value);
         last.SourceCurrencyCode.Should().Be(request.SourceCurrencyCode);
         last.TargetCurrencyCode.Should().Be(request.TargetCurrencyCode);
+        last.CreatedBy.Should().Be(FakeHolder.StaticUser);
         last.Id.Should().BePositive();
     }
 }

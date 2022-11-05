@@ -80,7 +80,7 @@ public class ExchangeUseCaseService : IExchangeUseCaseService
         var currentCount = await _cacheProvider.GetAsync<int>(cacheKey);
         if (currentCount == 0)
         {
-            currentCount = await _exchangeLogRepository.Table.CountAsync(w => w.CreatedAt > DateTime.Now.AddHours(-1));
+            currentCount = await _exchangeLogRepository.Table.CountAsync(w => w.CreatedAt > DateTime.Now.AddHours(-1) && w.CreatedBy == _holder.UserId);
         }
 
         _logger.LogInformation("Current count:{currentCount} for user {user} ", currentCount, _holder.UserId);

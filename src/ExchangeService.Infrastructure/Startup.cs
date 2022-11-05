@@ -61,6 +61,7 @@ public static class Startup
 
         services.AddDbContextPool<DbContext, TContext>((serviceProvider, option) =>
         {
+            option.UseApplicationServiceProvider(serviceProvider);
             option.UseNpgsql(connectionString);
             if (optionsAction == null)
                 return;
@@ -77,6 +78,7 @@ public static class Startup
 
         services.AddDbContextPool<DbContext, TContext>((serviceProvider, option) =>
         {
+            option.UseApplicationServiceProvider(serviceProvider);
             option.UseInMemoryDatabase("ExchangeDb");
             if (optionsAction == null)
                 return;

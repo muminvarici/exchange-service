@@ -22,7 +22,7 @@ offer the same functionality that currently exists in the bank’s solution, suc
 - Docker support
 - C# (.NET 6)
 - Entity Framework Core
-- DB: Postgres (`EnsureCreated called on Program.cs`)
+- DB: Postgres or InMemoryDb(`EnsureCreated called on Program.cs` set on `appsettings.json ApplicationSettings:UsePostgres`)
 - Caching -> `memory` or `redis` set on `appsettings.json ApplicationSettings:UseRedis`
 - Swagger Support
 - RESTful APIs
