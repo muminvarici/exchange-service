@@ -6,7 +6,6 @@ using ExchangeService.Api.Requests;
 using ExchangeService.Application.Services.Abstractions;
 using ExchangeService.Core.Entities;
 using ExchangeService.Core.Extensions;
-using ExchangeService.Core.Infrastructure.Exceptions;
 using ExchangeService.Core.Repositories;
 using ExchangeService.Core.Services;
 using ExchangeService.Core.Services.Responses;
@@ -14,26 +13,28 @@ using ExchangeService.Infrastructure;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace ExchangeService.Api.Test;
 
-public class ApiTests
+public class ServiceTests
 {
-    private readonly IConfiguration _configuration;
-    private readonly ServiceCollection _services;
     private readonly IExchangeUseCaseService _useCaseService;
     private readonly ICurrencyProvider _currencyProvider;
     private readonly IRepository<ExchangeLog> _repository;
 
-    public ApiTests()
+    public ServiceTests()
     {
-        _services = new ServiceCollection();
-        IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+        var services = new ServiceCollection();
+        var configurationBuilder = new ConfigurationBuilder();
         configurationBuilder.AddJsonFile("appsettings.Test.json");
-        _configuration = configurationBuilder.Build();
-        _services.AddInfrastructureServices(_configuration);
-        var serviceProvider = _services.BuildServiceProvider();
+        var configuration = configurationBuilder.Build();
+        services.AddInfrastructureServices(configuration);
+        services.RemoveAll<ICurrencyProvider>();
+        services.AddScoped<ICurrencyProvider, FakeCurrencyProvider>();
+
+        var serviceProvider = services.BuildServiceProvider();
         _useCaseService = serviceProvider.GetService<IExchangeUseCaseService>();
         _currencyProvider = serviceProvider.GetService<ICurrencyProvider>();
         _repository = serviceProvider.GetService<IRepository<ExchangeLog>>();

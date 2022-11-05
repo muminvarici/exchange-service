@@ -4,5 +4,4 @@ public class FixerIoSettings
 {
     public Uri Url { get; set; }
     public string ApiKey { get; set; }
-    public bool DevelopmentMode { get; set; }
 }

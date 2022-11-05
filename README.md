@@ -26,7 +26,7 @@ offer the same functionality that currently exists in the bank’s solution, suc
 - Caching -> `memory` or `redis` set on `appsettings.json ApplicationSettings:UseRedis`
 - Swagger Support
 - RESTful APIs
-- Unit Tests -> BDD
+- Unit Tests
 - Logging -> Serilog
 - FluentValidation
 - FluentAssertions
@@ -36,3 +36,6 @@ offer the same functionality that currently exists in the bank’s solution, suc
 > docker-compose up -d
 
 - https://localhost:5000
+
+## Test Results
+![](test/test-results/test-result.png)
