@@ -2,13 +2,12 @@ using System.Reflection;
 using ExchangeService.Api.Filters;
 using ExchangeService.Core.Infrastructure.Filters;
 using ExchangeService.Infrastructure;
-using ExchangeService.Infrastructure.Data;
 using FluentValidation;
-using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
-using Swashbuckle.AspNetCore.SwaggerUI;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +18,6 @@ builder.Host.UseSerilog((context, configuration) => configuration
 
 var configuration = builder.Configuration;
 var services = builder.Services;
-
-var connectionString = configuration.GetConnectionString("Data");
-services.AddPostgresDbContext<ApplicationDbContext>(connectionString, optionsAction => { });
 
 // Add services to the container.
 services.AddRouting(w => w.LowercaseUrls = true);

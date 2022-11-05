@@ -26,6 +26,17 @@ public static class Startup
         if (useRedis) services.AddRedis(configuration);
         else services.AddMemoryCache(configuration);
 
+        var usePostgres = configuration.GetValue<bool>("ApplicationSettings:UsePostgres");
+        if (usePostgres)
+        {
+            var connectionString = configuration.GetConnectionString("Data");
+            services.AddPostgresDbContext<ApplicationDbContext>(connectionString, optionsAction => { });
+        }
+        else
+        {
+            services.AddMemoryDbContext<ApplicationDbContext>(optionsAction => { });
+        }
+
         return services.AddHttpContextAccessor()
             .AddApplicationServices(configuration)
             .AddScoped<IHolder>(serviceProvider =>
@@ -51,6 +62,22 @@ public static class Startup
         services.AddDbContextPool<DbContext, TContext>((serviceProvider, option) =>
         {
             option.UseNpgsql(connectionString);
+            if (optionsAction == null)
+                return;
+            optionsAction(option);
+        });
+    }
+
+    public static void AddMemoryDbContext<TContext>(
+        this IServiceCollection services,
+        Action<DbContextOptionsBuilder> optionsAction)
+        where TContext : DbContext
+    {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        services.AddDbContextPool<DbContext, TContext>((serviceProvider, option) =>
+        {
+            option.UseInMemoryDatabase("ExchangeDb");
             if (optionsAction == null)
                 return;
             optionsAction(option);

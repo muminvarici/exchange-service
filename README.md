@@ -29,9 +29,10 @@ offer the same functionality that currently exists in the bank’s solution, suc
 - Unit Tests -> BDD
 - Logging -> Serilog
 - FluentValidation
+- FluentAssertions
 
 ## Running
 
 > docker-compose up -d
 
-- https://localhost:5001 or http://localhost:5000
+- https://localhost:5000

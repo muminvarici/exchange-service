@@ -5,7 +5,7 @@ namespace ExchangeService.Core.Extensions;
 
 public static class SerializationExtensions
 {
-    private static readonly JsonSerializerOptions? _options = new JsonSerializerOptions()
+    private static readonly JsonSerializerOptions? _options = new()
     {
         PropertyNameCaseInsensitive = true
     };

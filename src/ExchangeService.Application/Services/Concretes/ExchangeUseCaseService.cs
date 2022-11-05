@@ -44,7 +44,7 @@ public class ExchangeUseCaseService : IExchangeUseCaseService
 
     public async Task<decimal> MakeExchangeAsync(string sourceCurrency, string targetCurrency, decimal amount, ExchangeDirection direction)
     {
-        var (value, currency) = await CalculateAmount(targetCurrency, targetCurrency, amount);
+        var (value, currency) = await CalculateAmount(sourceCurrency, targetCurrency, amount);
         var entity = new ExchangeLog()
         {
             Direction = direction,
@@ -80,7 +80,7 @@ public class ExchangeUseCaseService : IExchangeUseCaseService
         var currentCount = await _cacheProvider.GetAsync<int>(cacheKey);
         if (currentCount == 0)
         {
-            currentCount = await _exchangeLogRepository.Queryable.CountAsync(w => w.CreatedAt > DateTime.Now.AddHours(-1));
+            currentCount = await _exchangeLogRepository.Table.CountAsync(w => w.CreatedAt > DateTime.Now.AddHours(-1));
         }
 
         _logger.LogInformation("Current count:{currentCount} for user {user} ", currentCount, _holder.UserId);
