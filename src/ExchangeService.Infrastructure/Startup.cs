@@ -21,10 +21,7 @@ public static class Startup
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Data");
         var useRedis = configuration.GetValue<bool>("ApplicationSettings:UseRedis");
-
-        services.AddDbContext<ApplicationDbContext>(connectionString, optionsAction => { });
 
         if (useRedis) services.AddRedis(configuration);
         else services.AddMemoryCache(configuration);
@@ -43,7 +40,7 @@ public static class Startup
             .AddServiceClients(configuration);
     }
 
-    private static void AddDbContext<TContext>(
+    public static void AddPostgresDbContext<TContext>(
         this IServiceCollection services,
         string connectionString,
         Action<DbContextOptionsBuilder> optionsAction)

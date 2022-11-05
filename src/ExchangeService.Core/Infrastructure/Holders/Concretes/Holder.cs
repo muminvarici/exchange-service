@@ -1,3 +1,4 @@
+using ExchangeService.Core.Infrastructure.Exceptions;
 using ExchangeService.Core.Infrastructure.Holders.Abstractions;
 using Microsoft.AspNetCore.Http;
 
@@ -12,7 +13,15 @@ public class Holder : IHolder
     {
         if (!_initialized) InitializeData();
         if (userId == UserId && userId > 0) return true;
-        if (throwException) throw new UnauthorizedAccessException();
+        if (throwException) throw new ServiceException(ServiceExceptionType.Unauthorized);
+        return false;
+    }
+
+    public bool CheckUser(bool throwException = true)
+    {
+        if (!_initialized) InitializeData();
+        if (UserId > 0) return true;
+        if (throwException) throw new ServiceException(ServiceExceptionType.Unauthorized);
         return false;
     }
 

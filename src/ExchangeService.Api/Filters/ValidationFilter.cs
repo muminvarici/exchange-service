@@ -12,18 +12,13 @@ public class ValidationFilter : IAsyncActionFilter
         if (!context.ModelState.IsValid)
         {
             var errorInModelState = context.ModelState.Where(x => x.Value.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.Errors.First()
-                );
+                .Select(w => new ValidationFailure
+                {
+                    PropertyName = w.Key,
+                    ErrorMessage = w.Value.Errors.First().ErrorMessage
+                });
 
-            throw new ValidationException(
-                    errorInModelState.Select(w => new ValidationFailure
-                    {
-                        PropertyName = w.Key,
-                        ErrorMessage = w.Value.ErrorMessage
-                    }))
-                ;
+            throw new ValidationException(errorInModelState);
         }
 
         await next();

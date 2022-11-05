@@ -1,4 +1,5 @@
 using ExchangeService.Core.Entities.Enums;
+using ExchangeService.Core.Infrastructure.Holders.Abstractions;
 using FluentValidation;
 
 namespace ExchangeService.Api.Requests;
@@ -13,8 +14,10 @@ public class MakeExchangeRequest
 
 public class MakeExchangeRequestValidator : AbstractValidator<MakeExchangeRequest>
 {
-    public MakeExchangeRequestValidator()
+    public MakeExchangeRequestValidator(IHolder holder)
     {
+        holder.CheckUser(true);
+        
         RuleFor(w => w.Amount)
             .GreaterThan(0);
         RuleFor(w => w.Direction)

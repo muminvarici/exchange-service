@@ -25,6 +25,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(w => w.TargetAmount).HasPrecision(2).IsRequired();
             entity.Property(w => w.Direction).HasPrecision(2).IsRequired();
             entity.Property(w => w.RateDate).IsRequired();
+            entity.HasIndex(w => w.CreatedBy);
+            entity.HasIndex(w => w.SourceCurrencyCode);
+            entity.HasIndex(w => w.TargetCurrencyCode);
         });
 
         base.OnModelCreating(modelBuilder);

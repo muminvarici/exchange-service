@@ -3,6 +3,7 @@ namespace ExchangeService.Core.Infrastructure.Holders.Abstractions;
 public interface IHolder
 {
     bool CheckUser(int userId, bool throwException = true);
+    bool CheckUser(bool throwException = true);
     string CustomRequestId { get; }
 
     string Ip { get; }

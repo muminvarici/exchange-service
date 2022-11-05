@@ -2,16 +2,29 @@ using System.Reflection;
 using ExchangeService.Api.Filters;
 using ExchangeService.Core.Infrastructure.Filters;
 using ExchangeService.Infrastructure;
+using ExchangeService.Infrastructure.Data;
 using FluentValidation;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.SwaggerUI;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
+
 var configuration = builder.Configuration;
 var services = builder.Services;
 
-// Add services to the container.
+var connectionString = configuration.GetConnectionString("Data");
+services.AddPostgresDbContext<ApplicationDbContext>(connectionString, optionsAction => { });
 
+// Add services to the container.
+services.AddRouting(w => w.LowercaseUrls = true);
 services.AddControllers(options =>
     {
         options.Filters.Add<CustomExceptionFilter>();
@@ -36,19 +49,31 @@ services.AddSwaggerGen(c =>
     c.OperationFilter<AddRequiredHeaderParametersFilter>();
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "API", Version = "v1"
+        Title = "API",
+        Version = "v1"
     });
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 
 services.AddInfrastructureServices(configuration);
 
 var app = builder.Build();
 
+await app.Services.CreateScope().ServiceProvider.GetRequiredService<DbContext>().Database.EnsureCreatedAsync();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Exchange API V1");
+        c.RoutePrefix = "";
+        c.DocExpansion(DocExpansion.None);
+    });
 }
 
 app.UseHttpsRedirection();
