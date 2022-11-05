@@ -12,10 +12,10 @@ offer the same functionality that currently exists in the bank’s solution, suc
 
 ## Solution
 
-- https://fixer.io/ integration implemented.
-- Currency exchange trades are logged in `ExchangeLog` table of `ExchangeDb`
-- Exchange rates are stored in cache for 30 minutes
-- Each customer can only exchange 10 times per hour (set on appsettings.json `ApplicationSettings:MaxExchangeCount`)
+- ✅ https://fixer.io/ integration implemented.
+- ✅ Currency exchange trades are logged in `ExchangeLog` table of `ExchangeDb`
+- ✅ Exchange rates are stored in cache for 30 minutes
+- ✅ Each customer can only exchange 10 times per hour (set on appsettings.json `ApplicationSettings:MaxExchangeCount`)
 
 ## Technologies
 
@@ -38,4 +38,27 @@ offer the same functionality that currently exists in the bank’s solution, suc
 - https://localhost:5000
 
 ## Test Results
+- Unit test results:
 ![](test/test-results/test-result.png)
+
+- Checking max exchange per user 
+> curl -X 'POST' \
+'https://localhost:5000/api/v1/exchanges' \
+-H 'accept: application/json' \
+-H 'UserId: 33' \
+-H 'Content-Type: application/json' \
+-d '{
+"sourceCurrencyCode": "USD",
+"targetCurrencyCode": "EUR",
+"amount": 10.4,
+"direction": 1
+}'
+
+>Error: Forbidden 403\
+{\
+"args": [],\
+"code": "MaxExchangeCountExceeded",\
+"message": "User can't exchange more than 10 per hour",\
+"errors": null,\
+"isSuccess": false\
+}

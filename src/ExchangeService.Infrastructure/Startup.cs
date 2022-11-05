@@ -30,11 +30,14 @@ public static class Startup
         if (usePostgres)
         {
             var connectionString = configuration.GetConnectionString("Data");
-            services.AddPostgresDbContext<ApplicationDbContext>(connectionString, optionsAction => { });
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            services.AddDbContext<DbContext, ApplicationDbContext>(options =>
+                options.UseNpgsql(connectionString));
         }
         else
         {
-            services.AddMemoryDbContext<ApplicationDbContext>(optionsAction => { });
+            services.AddDbContext<DbContext, ApplicationDbContext>(options =>
+                options.UseInMemoryDatabase("ExchangeDb"));
         }
 
         return services.AddHttpContextAccessor()
@@ -49,41 +52,6 @@ public static class Startup
             .AddScoped<ICurrencyProvider, FixerIoCurrencyProvider>()
             .AddScoped(typeof(IRepository<>), typeof(GenericRepository<>))
             .AddServiceClients(configuration);
-    }
-
-    public static void AddPostgresDbContext<TContext>(
-        this IServiceCollection services,
-        string connectionString,
-        Action<DbContextOptionsBuilder> optionsAction)
-        where TContext : DbContext
-    {
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
-        services.AddDbContextPool<DbContext, TContext>((serviceProvider, option) =>
-        {
-            option.UseApplicationServiceProvider(serviceProvider);
-            option.UseNpgsql(connectionString);
-            if (optionsAction == null)
-                return;
-            optionsAction(option);
-        });
-    }
-
-    public static void AddMemoryDbContext<TContext>(
-        this IServiceCollection services,
-        Action<DbContextOptionsBuilder> optionsAction)
-        where TContext : DbContext
-    {
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
-        services.AddDbContextPool<DbContext, TContext>((serviceProvider, option) =>
-        {
-            option.UseApplicationServiceProvider(serviceProvider);
-            option.UseInMemoryDatabase("ExchangeDb");
-            if (optionsAction == null)
-                return;
-            optionsAction(option);
-        });
     }
 
     private static IServiceCollection AddServiceClients(this IServiceCollection services, IConfiguration configuration)
@@ -101,14 +69,13 @@ public static class Startup
         return services;
     }
 
-    private static IServiceCollection AddMemoryCache(this IServiceCollection services, IConfiguration configuration)
+    private static void AddMemoryCache(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
         services.AddMemoryCache();
-        return services;
     }
 
-    private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
+    private static void AddRedis(this IServiceCollection services, IConfiguration configuration)
     {
         var config = configuration.GetSection(nameof(RedisSettings));
 
@@ -121,6 +88,5 @@ public static class Startup
         services.AddSingleton<IConnectionProvider, ConnectionProvider>();
 
         services.Configure<RedisSettings>(config);
-        return services;
     }
 }
