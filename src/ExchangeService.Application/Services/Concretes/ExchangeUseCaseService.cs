@@ -44,6 +44,7 @@ public class ExchangeUseCaseService : IExchangeUseCaseService
 
     public async Task<decimal> MakeExchangeAsync(string sourceCurrency, string targetCurrency, decimal amount, ExchangeDirection direction)
     {
+        await CheckUserExchangeCountPerHourAsync();
         var (value, currency) = await CalculateAmount(sourceCurrency, targetCurrency, amount);
         var entity = new ExchangeLog()
         {
@@ -54,7 +55,6 @@ public class ExchangeUseCaseService : IExchangeUseCaseService
             SourceCurrencyCode = sourceCurrency,
             RateDate = currency.RateDate
         };
-        await CheckUserExchangeCountPerHourAsync();
         await _exchangeLogRepository.InsertAsync(entity);
         await _exchangeLogRepository.SaveAllAsync();
 
@@ -76,11 +76,11 @@ public class ExchangeUseCaseService : IExchangeUseCaseService
 
     private async Task<int> TryGetCurrentCountForCustomerAsync()
     {
-        var cacheKey = _ratePerUserCacheKey.Format(_holder.UserId.ToString());
+        var cacheKey =string.Format( _ratePerUserCacheKey,_holder.UserId.ToString());
         var currentCount = await _cacheProvider.GetAsync<int>(cacheKey);
         if (currentCount == 0)
         {
-            currentCount = await _exchangeLogRepository.Table.CountAsync(w => w.CreatedAt > DateTime.Now.AddHours(-1) && w.CreatedBy == _holder.UserId);
+            //currentCount = await _exchangeLogRepository.Table.CountAsync(w => w.CreatedAt > DateTime.Now.AddHours(-1) && w.CreatedBy == _holder.UserId);
         }
 
         _logger.LogInformation("Current count:{currentCount} for user {user} ", currentCount, _holder.UserId);
@@ -95,13 +95,14 @@ public class ExchangeUseCaseService : IExchangeUseCaseService
         currentCount++;
         _logger.LogInformation("Current count increased to {currentCount} for user {user} ", currentCount, _holder.UserId);
 
-        var cacheKey = _ratePerUserCacheKey.Format(_holder.UserId.ToString());
+        var cacheKey =string.Format( _ratePerUserCacheKey,_holder.UserId.ToString());
+
         await _cacheProvider.SetAsync(cacheKey, currentCount, CacheTime.OneHour);
     }
 
     public Task<IEnumerable<ExchangeRateDto>> GetValidRatesAsync(string currency)
     {
-        return _cacheProvider.GetAsync<IEnumerable<ExchangeRateDto>>($"exchange:rates:{currency}", CacheTime.OneHour, async () =>
+        return _cacheProvider.GetAsync<IEnumerable<ExchangeRateDto>>($"exchange:rates:{currency}", CacheTime.ThirtyMinutes, async () =>
         {
             var data = await _currencyProvider.GetExchangeRatesAsync(currency).ToListAsync();
             _logger.LogInformation("Valid rates fetched");
